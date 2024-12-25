@@ -1,0 +1,6 @@
+packages: .
+
+package *
+    optimization: True
+    profiling: True
+    profiling-detail: toplevel-functions

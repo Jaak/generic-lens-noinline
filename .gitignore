@@ -1,0 +1,4 @@
+.vscode/
+dist-newstyle/
+cabal.project.local
+generic-lens-noinline.prof
