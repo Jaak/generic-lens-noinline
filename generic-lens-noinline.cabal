@@ -8,6 +8,6 @@ maintainer:         jaak.randmets@artificial.io
 
 executable generic-lens-noinline
     main-is:          Main.hs
-    build-depends:    base ^>=4.18.2.1, generic-lens, mtl, lens
+    build-depends:    base ^>=4.18.2.1, generic-lens, mtl, lens, criterion-measurement
     hs-source-dirs:   app
     default-language: Haskell2010
