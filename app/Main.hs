@@ -30,6 +30,7 @@ import qualified Criterion.Measurement as Measurement
 import System.Environment
 import System.Exit
 import System.IO
+import qualified Text.Printf as Text
 import Text.Read (readMaybe)
 
 data AppState = AppState
@@ -140,7 +141,7 @@ main = do
   (meas, _) <- flip Measurement.measure iterations do
     whnfIO (runTestApp what 100000)
   let measRescaled = rescale meas
-  putStrLn $ "Avg. Time: " <> show measRescaled.measTime <> "s"
+  Text.printf "Avg. Time: %.4f s\n" measRescaled.measTime
 
 err :: IO a
 err = do
