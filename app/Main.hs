@@ -12,6 +12,7 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 module Main (main) where
 
@@ -32,6 +33,7 @@ import System.Exit
 import System.IO
 import qualified Text.Printf as Text
 import Text.Read (readMaybe)
+import Data.Generics.Product.Typed
 
 data AppState = AppState
   { counter :: Int}
@@ -92,11 +94,18 @@ asksAppStateAsks getter = do
   liftIO $ getter <$> readIORef stateRef
 {-# NOINLINE asksAppStateAsks #-}
 
+asksAppStatePoly :: (MonadIO m, MonadReader r m, HasType (IORef AppState) r) => (AppState -> a) -> m a
+asksAppStatePoly getter = do
+  stateRef <- view $ the @(IORef AppState)
+  liftIO $ getter <$> readIORef stateRef
+{-# NOINLINE asksAppStatePoly #-}
+
 data WhatToBenchmark
   = BenchmarkThe
   | BenchmarkLabel
   | BenchmarkTHLens
   | BenchmarkAsks
+  | BenchmarkPoly
   deriving stock (Enum)
 
 asksAppState :: WhatToBenchmark -> (AppState -> a) -> App a
@@ -105,6 +114,7 @@ asksAppState = \case
   BenchmarkLabel -> asksAppStateLabel
   BenchmarkTHLens -> asksAppStateTHLens
   BenchmarkAsks -> asksAppStateAsks
+  BenchmarkPoly -> asksAppStatePoly
 {-# INLINE asksAppState #-}
 
 runTestApp :: WhatToBenchmark -> Int -> IO Int
@@ -132,7 +142,7 @@ main = do
       _ -> err
   what <- toEnum <$> do
     case readMaybe arg1 of
-      Just (n :: Int) | 0 <= n, n <= 3 -> pure n
+      Just (n :: Int) | 0 <= n, n <= 4 -> pure n
       _ -> err
   iterations <- do
     case readMaybe arg2 of
@@ -152,6 +162,7 @@ err = do
       " 0 - benchmark using 'asksAppStateThe'",
       " 1 - benchmark using 'asksAppStateLabel'",
       " 2 - benchmark using 'asksAppStateTHLens'",
-      " 3 - benchmark using 'asksAppStateAsks'"
+      " 3 - benchmark using 'asksAppStateAsks'",
+      " 4 - benchmark using 'asksAppStatPoly'"
     ]
   exitFailure
